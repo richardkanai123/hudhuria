@@ -33,6 +33,7 @@ import { CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { Calendar } from "../ui/calendar"
+import citiesInKenya from "@/lib/cities"
 
 // zod schema for event data
 const categories = eventCategories.map((item) => item.name)
@@ -41,11 +42,22 @@ const EventSchema = z.object({
     title: z.string().min(1, "Title is required"), // Title of the event
     description: z.string().min(1, "Description is required"), // Description of the event
     category: z.enum(categories as [string, ...string[]]), // Category of the event (e.g., music, business, etc.)
-    city: z.string().min(1, "City is required"), // The city where the event takes place
+    city: z.enum(citiesInKenya.sort() as [string, ...string[]]), // The city where the event takes place
     venue: z.string().min(1, "Venue is required"), // Venue of the event
     imageUrl: z.string().url("Invalid URL"), // URL of the event's image
     startDate: z.date(), // Start date and time of the event
     endDate: z.date(), // End date and time of the event
+    // start and endtime
+    startTime: z.object({
+        hour: z.number().int().min(0).max(23),
+        minute: z.number().int().min(0).max(59),
+        second: z.number().int().min(0).max(59),
+    }),
+    endTime: z.object({
+        hour: z.number().int().min(0).max(23),
+        minute: z.number().int().min(0).max(59),
+        second: z.number().int().min(0).max(59),
+    }),
     organizer: z.object({
         id: z.string(), // Unique identifier for the event organizer
         name: z.string().min(1, "Organizer name is required"), // Name of the organizer
@@ -77,6 +89,8 @@ const NewEvent = () => {
             imageUrl: '',
             startDate: new Date(),
             endDate: new Date(),
+            // time
+            // startTime:
             organizer: {
                 id: '',
                 name: '',
@@ -155,7 +169,7 @@ const NewEvent = () => {
                                             </SelectTrigger>
                                         </FormControl>                                        <SelectContent>
                                             <SelectGroup>
-                                                <SelectLabel>Select Categories</SelectLabel>
+                                                <SelectLabel>Select a category</SelectLabel>
                                                 {
                                                     eventCategories.map((category) => (
                                                         <SelectItem key={category.name} value={category.name}>
@@ -171,7 +185,7 @@ const NewEvent = () => {
                             )}
                         />
 
-                        <fieldset title="Venue and Time Details" className="grid grid-cols-2 gap-4 items-center align-middle border p-2">
+                        <fieldset title="Venue and Time Details" className="grid grid-cols-1 md:grrid-cols-2 gap-4 items-center align-middle border p-2">
 
                             <legend className="">Venue and Time Details</legend>
 
@@ -189,12 +203,43 @@ const NewEvent = () => {
                                 )}
                             />
 
+
+                            <FormField
+                                control={form.control}
+                                name="city"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel> Venue City</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select the Venue City" />
+                                                </SelectTrigger>
+                                            </FormControl>                                        <SelectContent>
+                                                <SelectGroup>
+                                                    <SelectLabel>Select City</SelectLabel>
+                                                    {
+                                                        citiesInKenya.map((city) => (
+                                                            <SelectItem key={city} value={city}>
+                                                                {city}
+                                                            </SelectItem>
+                                                        ))
+                                                    }
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
                             <FormField
                                 control={form.control}
                                 name="startDate"
+
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="block">Start</FormLabel>
+                                        <FormLabel className="block">Kick Off Date</FormLabel>
                                         <Popover>
                                             <PopoverTrigger asChild>
                                                 <FormControl>
@@ -203,7 +248,7 @@ const NewEvent = () => {
                                                         !field.value && "text-muted-foreground"
                                                     )}>
                                                         <CalendarIcon className="mr-2 h-4 w-4" />
-                                                        {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                                                        {field.value ? format(field.value, "P") : <span>Pick a date</span>}
                                                     </Button>
                                                 </FormControl>
                                             </PopoverTrigger>
@@ -221,7 +266,7 @@ const NewEvent = () => {
                                 name="endDate"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="block">End</FormLabel>
+                                        <FormLabel className="block">Closing Date</FormLabel>
                                         <Popover>
                                             <PopoverTrigger asChild>
                                                 <FormControl>
@@ -230,7 +275,7 @@ const NewEvent = () => {
                                                         !field.value && "text-muted-foreground"
                                                     )}>
                                                         <CalendarIcon className="mr-2 h-4 w-4" />
-                                                        {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                                                        {field.value ? format(field.value, "P") : <span>Pick a date</span>}
                                                     </Button>
                                                 </FormControl>
                                             </PopoverTrigger>
@@ -243,6 +288,43 @@ const NewEvent = () => {
                                 )}
                             />
                         </fieldset>
+
+                        {/* ticketing */}
+                        <fieldset title="Ticketing details" className="grid grid-cols-2 gap-4 items-center align-middle border p-2">
+                            <legend>Ticketing</legend>
+
+                            <FormField
+                                control={form.control}
+                                name="isPaidEvent"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel> Paid Event</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue="true">
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select a category" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    <SelectLabel>Select Categories</SelectLabel>
+                                                    <SelectItem value="true">
+                                                        Is Paid
+                                                    </SelectItem>
+                                                    <SelectItem value="false">
+                                                        Is free
+                                                    </SelectItem>
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </fieldset>
+
+
+
 
                         <Button type="submit">Add Event</Button>
                     </form>
