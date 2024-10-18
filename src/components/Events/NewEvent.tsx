@@ -1,3 +1,12 @@
+/**
+ * The `NewEvent` component is a React component that renders a form for creating a new event. It uses the `react-hook-form` library to manage the form state and validation, and the `zod` library to define the schema for the event data.
+ *
+ * The form includes fields for the event title, description, category, venue, city, start and end dates, organizer information, ticket details, and whether the event is paid or free. The component also includes a calenar component for selecting the start and end dates.
+ *
+ * The `onSubmit` function is called when the form is submitted, and it logs the event data to the console.
+ */
+
+import { useEffect, useState } from 'react';
 import { Card } from "@/components/ui/card"
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
@@ -65,11 +74,10 @@ const EventSchema = z.object({
     }),
     ticket: z.object({
         price: z.number().nonnegative(), // Ticket price (if free, set to 0)
-        currency: z.string().length(3, "Currency should be a 3-letter ISO code"), // Currency of the ticket price (e.g., USD, KES)
         totalTickets: z.number().int().nonnegative(), // Total number of tickets available
         soldTickets: z.number().int().nonnegative(), // Number of tickets sold
     }),
-    isPaidEvent: z.boolean(), // Whether the event is paid or free
+    isPaidEvent: z.boolean().default(false), // Whether the event is paid or free
     tags: z.array(z.string()).optional(), // List of tags related to the event (e.g., #festival, #workshop)
     attendees: z.array(z.string()).optional(), // List of user IDs of attendees
     isCancelled: z.boolean().default(false), // Whether the event has been cancelled
@@ -98,11 +106,9 @@ const NewEvent = () => {
             },
             ticket: {
                 price: 0,
-                currency: '',
                 totalTickets: 0,
                 soldTickets: 0,
             },
-            isPaidEvent: false,
             tags: [],
             attendees: [],
             isCancelled: false,
@@ -111,10 +117,22 @@ const NewEvent = () => {
         },
     });
 
+    const [showPriceField, setShowPriceField] = useState(false);
+
+
 
     const onSubmit = (data: z.infer<typeof EventSchema>) => {
         console.log(data);
     }
+
+
+    const isPaidEvent = form.watch("isPaidEvent")
+    useEffect(() => {
+        setShowPriceField(isPaidEvent)
+        console.log('rerender')
+    }, [isPaidEvent])
+
+
 
     return (
         <div
@@ -299,7 +317,7 @@ const NewEvent = () => {
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel> Paid Event</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue="true">
+                                        <Select onValueChange={field.onChange} defaultValue="false">
                                             <FormControl>
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="Select a category" />
@@ -321,6 +339,45 @@ const NewEvent = () => {
                                     </FormItem>
                                 )}
                             />
+
+
+                            {/* listen to isPaid variable to only show the input for price on a paid event */}
+
+                            {
+                                showPriceField && (
+                                    <aside className="flex flex-col md:flex-row items-start align-middle justify-center gap-4 flex-wrap" >
+
+                                        <FormField
+                                            control={form.control}
+                                            name="ticket.price"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Ticket Price</FormLabel>
+                                                    <FormControl>
+                                                        <Input placeholder="Price in KSh." {...field} type="number" />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+
+                                        <FormField
+                                            control={form.control}
+                                            name="ticket.totalTickets"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Available Tickets</FormLabel>
+                                                    <FormControl>
+                                                        <Input placeholder="Number of available tickets for sale." {...field} type="number" />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </aside>
+                                )
+                            }
+
                         </fieldset>
 
 
@@ -333,7 +390,7 @@ const NewEvent = () => {
 
             </Card>
 
-        </div>
+        </div >
     )
 }
 
