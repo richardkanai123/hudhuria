@@ -20,6 +20,7 @@ import { Route as PolicyImport } from './routes/policy'
 import { Route as LoginImport } from './routes/login'
 import { Route as ContactImport } from './routes/contact'
 import { Route as EventsIndexImport } from './routes/events/index'
+import { Route as EventsNewImport } from './routes/events/new'
 import { Route as EventsEventIdImport } from './routes/events/$eventId'
 
 // Create Virtual Routes
@@ -77,6 +78,11 @@ const IndexLazyRoute = IndexLazyImport.update({
 
 const EventsIndexRoute = EventsIndexImport.update({
   path: '/events/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const EventsNewRoute = EventsNewImport.update({
+  path: '/events/new',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -159,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EventsEventIdImport
       parentRoute: typeof rootRoute
     }
+    '/events/new': {
+      id: '/events/new'
+      path: '/events/new'
+      fullPath: '/events/new'
+      preLoaderRoute: typeof EventsNewImport
+      parentRoute: typeof rootRoute
+    }
     '/events/': {
       id: '/events/'
       path: '/events'
@@ -182,6 +195,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutLazyRoute
   '/profile': typeof ProfileLazyRoute
   '/events/$eventId': typeof EventsEventIdRoute
+  '/events/new': typeof EventsNewRoute
   '/events': typeof EventsIndexRoute
 }
 
@@ -196,6 +210,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutLazyRoute
   '/profile': typeof ProfileLazyRoute
   '/events/$eventId': typeof EventsEventIdRoute
+  '/events/new': typeof EventsNewRoute
   '/events': typeof EventsIndexRoute
 }
 
@@ -211,6 +226,7 @@ export interface FileRoutesById {
   '/about': typeof AboutLazyRoute
   '/profile': typeof ProfileLazyRoute
   '/events/$eventId': typeof EventsEventIdRoute
+  '/events/new': typeof EventsNewRoute
   '/events/': typeof EventsIndexRoute
 }
 
@@ -227,6 +243,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/profile'
     | '/events/$eventId'
+    | '/events/new'
     | '/events'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -240,6 +257,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/profile'
     | '/events/$eventId'
+    | '/events/new'
     | '/events'
   id:
     | '__root__'
@@ -253,6 +271,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/profile'
     | '/events/$eventId'
+    | '/events/new'
     | '/events/'
   fileRoutesById: FileRoutesById
 }
@@ -268,6 +287,7 @@ export interface RootRouteChildren {
   AboutLazyRoute: typeof AboutLazyRoute
   ProfileLazyRoute: typeof ProfileLazyRoute
   EventsEventIdRoute: typeof EventsEventIdRoute
+  EventsNewRoute: typeof EventsNewRoute
   EventsIndexRoute: typeof EventsIndexRoute
 }
 
@@ -282,6 +302,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutLazyRoute: AboutLazyRoute,
   ProfileLazyRoute: ProfileLazyRoute,
   EventsEventIdRoute: EventsEventIdRoute,
+  EventsNewRoute: EventsNewRoute,
   EventsIndexRoute: EventsIndexRoute,
 }
 
@@ -307,6 +328,7 @@ export const routeTree = rootRoute
         "/about",
         "/profile",
         "/events/$eventId",
+        "/events/new",
         "/events/"
       ]
     },
@@ -339,6 +361,9 @@ export const routeTree = rootRoute
     },
     "/events/$eventId": {
       "filePath": "events/$eventId.tsx"
+    },
+    "/events/new": {
+      "filePath": "events/new.tsx"
     },
     "/events/": {
       "filePath": "events/index.tsx"

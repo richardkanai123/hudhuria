@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router"
 import { Button } from "../ui/button"
-import { FaFacebook, FaWhatsapp } from "react-icons/fa6";
+import { FaFacebook, FaGithub, FaWhatsapp } from "react-icons/fa6";
 import { MailPlusIcon, PhoneCall } from "lucide-react";
 const Footer = () => {
     return (
@@ -11,7 +11,7 @@ const Footer = () => {
                 {/* social links */}
                 <div className=" flex-1 flex flex-col justify-center gap-4 text-left sm:border-b md:border-none">
                     <h1 className="text-xl font-bold">Links</h1>
-                    <Link resetScroll={true} to="/" className="w-fit text-sm hover:text-sky-400 font-semibold underline cursor-pointer">Home</Link>
+                    <Link to="/" resetScroll={true} className="w-fit text-sm hover:text-sky-400 font-semibold underline cursor-pointer">Home</Link>
                     <Link resetScroll={true} to="/about" className="w-fit text-sm hover:text-sky-400 font-semibold underline cursor-pointer">About Us</Link>
                     <Link resetScroll={true} to="/policy" className="w-fit text-sm hover:text-sky-400 font-semibold underline cursor-pointer">Terms and Conditions</Link>
                     <Link resetScroll={true} to="/policy" className="w-fit text-sm hover:text-sky-400 font-semibold underline cursor-pointer">Privacy Policy</Link>
@@ -71,8 +71,10 @@ const Footer = () => {
                     <p className="text-center text-lg font-semibold">
                         &copy; 2024 Hudhuria. All rights reserved.
                     </p>
-                    <p className="text-center text-lg font-semibold">
-                        Powered by <a href="https://www.hudhuria.com" target='blank' className="text-sky-700 hover:text-sky-400 font-semibold  cursor-pointer">Hudhuria</a>
+                    <p className="text-center flex gap-2 text-lg font-semibold">
+                        Powered by <a href="https://github.com/richardkanai123" target='blank' className="text-sky-700 hover:text-sky-400 font-semibold  cursor-pointer">
+                            <FaGithub className="h-6 w-6" />RK
+                        </a>
                     </p>
                 </div>
 
