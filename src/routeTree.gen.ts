@@ -32,61 +32,73 @@ const IndexLazyImport = createFileRoute('/')()
 // Create/Update Routes
 
 const ProfileLazyRoute = ProfileLazyImport.update({
+  id: '/profile',
   path: '/profile',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/profile.lazy').then((d) => d.Route))
 
 const AboutLazyRoute = AboutLazyImport.update({
+  id: '/about',
   path: '/about',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/about.lazy').then((d) => d.Route))
 
 const SignupRoute = SignupImport.update({
+  id: '/signup',
   path: '/signup',
   getParentRoute: () => rootRoute,
 } as any)
 
 const ResetPasswordRoute = ResetPasswordImport.update({
+  id: '/resetPassword',
   path: '/resetPassword',
   getParentRoute: () => rootRoute,
 } as any)
 
 const QuestionsRoute = QuestionsImport.update({
+  id: '/questions',
   path: '/questions',
   getParentRoute: () => rootRoute,
 } as any)
 
 const PolicyRoute = PolicyImport.update({
+  id: '/policy',
   path: '/policy',
   getParentRoute: () => rootRoute,
 } as any)
 
 const LoginRoute = LoginImport.update({
+  id: '/login',
   path: '/login',
   getParentRoute: () => rootRoute,
 } as any)
 
 const ContactRoute = ContactImport.update({
+  id: '/contact',
   path: '/contact',
   getParentRoute: () => rootRoute,
 } as any)
 
 const IndexLazyRoute = IndexLazyImport.update({
+  id: '/',
   path: '/',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
 
 const EventsIndexRoute = EventsIndexImport.update({
+  id: '/events/',
   path: '/events/',
   getParentRoute: () => rootRoute,
 } as any)
 
 const EventsNewRoute = EventsNewImport.update({
+  id: '/events/new',
   path: '/events/new',
   getParentRoute: () => rootRoute,
 } as any)
 
 const EventsEventIdRoute = EventsEventIdImport.update({
+  id: '/events/$eventId',
   path: '/events/$eventId',
   getParentRoute: () => rootRoute,
 } as any)

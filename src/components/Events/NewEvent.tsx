@@ -6,15 +6,12 @@
  * The `onSubmit` function is called when the form is submitted, and it logs the event data to the console.
  */
 
-import { useEffect, useState } from 'react';
 import { Card } from "@/components/ui/card"
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from "@/components/ui/button"
-// array of categories of events that can be selected and their corresponding description
 import eventCategories from "@/lib/Event_categories"
-
 
 import {
     Form,
@@ -43,47 +40,41 @@ import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { Calendar } from "../ui/calendar"
 import citiesInKenya from "@/lib/cities"
+import { Switch } from '../ui/switch';
+import { TimePickerDemo } from "@/lib/time-picker-demo"
 
 // zod schema for event data
 const categories = eventCategories.map((item) => item.name)
+
 const EventSchema = z.object({
-    id: z.string(), // Unique identifier for the event
-    title: z.string().min(1, "Title is required"), // Title of the event
-    description: z.string().min(1, "Description is required"), // Description of the event
-    category: z.enum(categories as [string, ...string[]]), // Category of the event (e.g., music, business, etc.)
-    city: z.enum(citiesInKenya.sort() as [string, ...string[]]), // The city where the event takes place
-    venue: z.string().min(1, "Venue is required"), // Venue of the event
-    imageUrl: z.string().url("Invalid URL"), // URL of the event's image
-    startDate: z.date(), // Start date and time of the event
-    endDate: z.date(), // End date and time of the event
-    // start and endtime
-    startTime: z.object({
-        hour: z.number().int().min(0).max(23),
-        minute: z.number().int().min(0).max(59),
-        second: z.number().int().min(0).max(59),
-    }),
-    endTime: z.object({
-        hour: z.number().int().min(0).max(23),
-        minute: z.number().int().min(0).max(59),
-        second: z.number().int().min(0).max(59),
-    }),
-    organizer: z.object({
-        id: z.string(), // Unique identifier for the event organizer
-        name: z.string().min(1, "Organizer name is required"), // Name of the organizer
-        contactEmail: z.string().email("Invalid email"), // Organizer's contact email
-    }),
+    title: z.string().min(10, "Title is required, at least 10 characters"),
+    description: z.string().min(1, "Description is required"),
+    category: z.enum(categories as [string, ...string[]]),
+    city: z.enum(citiesInKenya.sort() as [string, ...string[]]),
+    venue: z.string().min(1, "Venue is required"),
+    startDate: z.date().min(new Date(), 'Event cannot be in the past'),
+    endDate: z.date().min(new Date(), 'Event cannot be in the past'),
     ticket: z.object({
-        price: z.number().nonnegative(), // Ticket price (if free, set to 0)
-        totalTickets: z.number().int().nonnegative(), // Total number of tickets available
-        soldTickets: z.number().int().nonnegative(), // Number of tickets sold
+        price: z.number().nonnegative(),
+        totalTickets: z.number().int().nonnegative(),
     }),
-    isPaidEvent: z.boolean().default(false), // Whether the event is paid or free
-    tags: z.array(z.string()).optional(), // List of tags related to the event (e.g., #festival, #workshop)
-    attendees: z.array(z.string()).optional(), // List of user IDs of attendees
-    isCancelled: z.boolean().default(false), // Whether the event has been cancelled
-    createdAt: z.date(), // Timestamp for when the event was created
-    updatedAt: z.date().optional(), // Optional: Timestamp for when the event was last updated
-});
+    isPaidEvent: z.boolean().default(false),
+}).refine(
+    (data) => data.startDate < data.endDate, // Ensure startDate is before endDate
+    {
+        path: ["endDate"], // Where the error message will be displayed
+        message: "End date must be after the start date",
+    }
+
+).refine(
+    (data) =>
+        !data.isPaidEvent || (data.ticket.price > 0 && data.ticket.totalTickets > 0), // Ensure price and totalTickets > 0 if event is paid
+    {
+        path: ["isPaidEvent"], // Where the error message will be displayed
+        message: "For paid events, ticket price and total tickets must be greater than zero",
+    }
+);
+
 
 const NewEvent = () => {
     const form = useForm<z.infer<typeof EventSchema>>({
@@ -94,50 +85,28 @@ const NewEvent = () => {
             category: '',
             city: '',
             venue: '',
-            imageUrl: '',
-            startDate: new Date(),
-            endDate: new Date(),
-            // time
-            // startTime:
-            organizer: {
-                id: '',
-                name: '',
-                contactEmail: '',
-            },
             ticket: {
                 price: 0,
                 totalTickets: 0,
-                soldTickets: 0,
             },
-            tags: [],
-            attendees: [],
-            isCancelled: false,
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            isPaidEvent: false,
         },
     });
 
-    const [showPriceField, setShowPriceField] = useState(false);
-
-
 
     const onSubmit = (data: z.infer<typeof EventSchema>) => {
+        if (form.formState.errors.root?.message) {
+            console.log(form.formState.errors.root?.message)
+        }
         console.log(data);
     }
 
-
     const isPaidEvent = form.watch("isPaidEvent")
-    useEffect(() => {
-        setShowPriceField(isPaidEvent)
-        console.log('rerender')
-    }, [isPaidEvent])
-
-
 
     return (
         <div
-            className="w-full flex flex-col items-center justify-center gap-4 mx-auto      min-h-screen px-3">
-            <Card className="w-full max-w-screen-lg p-6 rounded-none">
+            className="w-full flex flex-col items-center justify-center gap-4 mx-auto min-h-screen px-3 py-1 ">
+            <Card className="w-full max-w-screen-lg p-6 rounded-sm">
                 <h1 className="text-2xl font-bold mb-4">New Event</h1>
 
                 <Form {...form}>
@@ -151,6 +120,9 @@ const NewEvent = () => {
                                     <FormControl>
                                         <Input placeholder="Event Title" {...field} type="text" />
                                     </FormControl>
+                                    <FormDescription>
+                                        Title or name of the event
+                                    </FormDescription>
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -165,13 +137,12 @@ const NewEvent = () => {
                                         <Textarea {...field} placeholder="Event Description" rows={8} />
                                     </FormControl>
                                     <FormDescription>
-                                        Briefly describe your event. What is it about? What makes it special? What can attendees expect? Keep it clear, short and sweet.
+                                        Briefly describe your event. What is it about? What makes it special? What can attendees expect? Keep it clear and precise.
                                     </FormDescription>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
-
 
                         {/* select category */}
                         <FormField
@@ -205,22 +176,24 @@ const NewEvent = () => {
 
                         <fieldset title="Venue and Time Details" className="grid grid-cols-1 md:grrid-cols-2 gap-4 items-center align-middle border p-2">
 
-                            <legend className="">Venue and Time Details</legend>
+                            <legend className="text-lg font-semibold  text-sky-700">Venue and Time Details</legend>
 
                             <FormField
                                 control={form.control}
                                 name="venue"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Venue</FormLabel>
+                                        <FormLabel>Event Venue</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="Venue" {...field} type="text" />
+                                            <Input placeholder="Event Venue" {...field} type="text" />
                                         </FormControl>
+                                        <FormDescription>
+                                            The exact place/ building, street or facility where the event will be happening
+                                        </FormDescription>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
-
 
                             <FormField
                                 control={form.control}
@@ -246,6 +219,7 @@ const NewEvent = () => {
                                                 </SelectGroup>
                                             </SelectContent>
                                         </Select>
+
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -254,24 +228,41 @@ const NewEvent = () => {
                             <FormField
                                 control={form.control}
                                 name="startDate"
-
                                 render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="block">Kick Off Date</FormLabel>
+                                    <FormItem className="flex flex-col">
+                                        <FormLabel className="text-left">Start Date and Time</FormLabel>
                                         <Popover>
-                                            <PopoverTrigger asChild>
-                                                <FormControl>
-                                                    <Button variant={"outline"} className={cn(
-                                                        "w-[240px] justify-start text-left font-normal",
-                                                        !field.value && "text-muted-foreground"
-                                                    )}>
+                                            <FormControl>
+                                                <PopoverTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        className={cn(
+                                                            "w-full max-w-sm justify-start text-left font-normal",
+                                                            !field.value && "text-muted-foreground"
+                                                        )}
+                                                    >
                                                         <CalendarIcon className="mr-2 h-4 w-4" />
-                                                        {field.value ? format(field.value, "P") : <span>Pick a date</span>}
+                                                        {field.value ? (
+                                                            format(field.value, "PPP HH:mm:ss")
+                                                        ) : (
+                                                            <span>Pick a date</span>
+                                                        )}
                                                     </Button>
-                                                </FormControl>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-auto p-0" align="start">
-                                                <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                                                </PopoverTrigger>
+                                            </FormControl>
+                                            <PopoverContent className="w-auto p-0">
+                                                <Calendar
+                                                    mode="single"
+                                                    selected={field.value}
+                                                    onSelect={field.onChange}
+                                                    initialFocus
+                                                />
+                                                <div className="p-3 border-t border-border">
+                                                    <TimePickerDemo
+                                                        setDate={field.onChange}
+                                                        date={field.value}
+                                                    />
+                                                </div>
                                             </PopoverContent>
                                         </Popover>
                                         <FormMessage />
@@ -279,26 +270,45 @@ const NewEvent = () => {
                                 )}
                             />
 
+
                             <FormField
                                 control={form.control}
                                 name="endDate"
                                 render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="block">Closing Date</FormLabel>
+                                    <FormItem className="flex flex-col">
+                                        <FormLabel className="text-left">End Date and Time</FormLabel>
                                         <Popover>
-                                            <PopoverTrigger asChild>
-                                                <FormControl>
-                                                    <Button variant={"outline"} className={cn(
-                                                        "w-[240px] justify-start text-left font-normal",
-                                                        !field.value && "text-muted-foreground"
-                                                    )}>
+                                            <FormControl>
+                                                <PopoverTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        className={cn(
+                                                            "w-full max-w-sm justify-start text-left font-normal",
+                                                            !field.value && "text-muted-foreground"
+                                                        )}
+                                                    >
                                                         <CalendarIcon className="mr-2 h-4 w-4" />
-                                                        {field.value ? format(field.value, "P") : <span>Pick a date</span>}
+                                                        {field.value ? (
+                                                            format(field.value, "PPP HH:mm:ss")
+                                                        ) : (
+                                                            <span>Pick a date</span>
+                                                        )}
                                                     </Button>
-                                                </FormControl>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-auto p-0" align="start">
-                                                <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                                                </PopoverTrigger>
+                                            </FormControl>
+                                            <PopoverContent className="w-auto p-0">
+                                                <Calendar
+                                                    mode="single"
+                                                    selected={field.value}
+                                                    onSelect={field.onChange}
+                                                    initialFocus
+                                                />
+                                                <div className="p-3 border-t border-border">
+                                                    <TimePickerDemo
+                                                        setDate={field.onChange}
+                                                        date={field.value}
+                                                    />
+                                                </div>
                                             </PopoverContent>
                                         </Popover>
                                         <FormMessage />
@@ -309,44 +319,30 @@ const NewEvent = () => {
 
                         {/* ticketing */}
                         <fieldset title="Ticketing details" className="grid grid-cols-2 gap-4 items-center align-middle border p-2">
-                            <legend>Ticketing</legend>
+                            <legend className='text-lg font-semibold  text-sky-700'>Ticketing</legend>
 
                             <FormField
                                 control={form.control}
                                 name="isPaidEvent"
                                 render={({ field }) => (
-                                    <FormItem>
+                                    <FormItem className='flex items-center align-middle gap-2'>
                                         <FormLabel> Paid Event</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue="false">
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select a category" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                <SelectGroup>
-                                                    <SelectLabel>Select Categories</SelectLabel>
-                                                    <SelectItem value="true">
-                                                        Is Paid
-                                                    </SelectItem>
-                                                    <SelectItem value="false">
-                                                        Is free
-                                                    </SelectItem>
-                                                </SelectGroup>
-                                            </SelectContent>
-                                        </Select>
+                                        <FormControl>
+                                            <Switch
+                                                checked={field.value}
+                                                onCheckedChange={field.onChange}
+                                            />
+                                        </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
 
-
                             {/* listen to isPaid variable to only show the input for price on a paid event */}
 
                             {
-                                showPriceField && (
+                                isPaidEvent && (
                                     <aside className="flex flex-col md:flex-row items-start align-middle justify-center gap-4 flex-wrap" >
-
                                         <FormField
                                             control={form.control}
                                             name="ticket.price"
@@ -354,7 +350,13 @@ const NewEvent = () => {
                                                 <FormItem>
                                                     <FormLabel>Ticket Price</FormLabel>
                                                     <FormControl>
-                                                        <Input placeholder="Price in KSh." {...field} type="number" />
+                                                        <Input
+                                                            placeholder="Price in KSh."
+                                                            {...field}
+                                                            type="number"
+                                                            onChange={e => field.onChange(Number(e.target.value))}
+                                                            min={0}
+                                                        />
                                                     </FormControl>
                                                     <FormMessage />
                                                 </FormItem>
@@ -368,7 +370,13 @@ const NewEvent = () => {
                                                 <FormItem>
                                                     <FormLabel>Available Tickets</FormLabel>
                                                     <FormControl>
-                                                        <Input placeholder="Number of available tickets for sale." {...field} type="number" />
+                                                        <Input
+                                                            placeholder="Number of available tickets for sale."
+                                                            {...field}
+                                                            type="number"
+                                                            onChange={e => field.onChange(Number(e.target.value))}
+                                                            min={0}
+                                                        />
                                                     </FormControl>
                                                     <FormMessage />
                                                 </FormItem>
@@ -377,21 +385,19 @@ const NewEvent = () => {
                                     </aside>
                                 )
                             }
-
                         </fieldset>
 
-
-
+                        {
+                            form.formState.errors.root && <FormMessage className="my-3">
+                                {form.formState.errors.root?.message}
+                            </FormMessage>
+                        }
 
                         <Button type="submit">Add Event</Button>
                     </form>
                 </Form>
-
-
             </Card>
-
-        </div >
+        </div>
     )
 }
-
 export default NewEvent
