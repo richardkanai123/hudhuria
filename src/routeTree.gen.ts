@@ -18,6 +18,7 @@ import { Route as ResetPasswordImport } from './routes/resetPassword'
 import { Route as QuestionsImport } from './routes/questions'
 import { Route as PolicyImport } from './routes/policy'
 import { Route as LoginImport } from './routes/login'
+import { Route as ImageImport } from './routes/image'
 import { Route as ContactImport } from './routes/contact'
 import { Route as EventsIndexImport } from './routes/events/index'
 import { Route as EventsNewImport } from './routes/events/new'
@@ -73,6 +74,12 @@ const LoginRoute = LoginImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const ImageRoute = ImageImport.update({
+  id: '/image',
+  path: '/image',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const ContactRoute = ContactImport.update({
   id: '/contact',
   path: '/contact',
@@ -119,6 +126,13 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactImport
+      parentRoute: typeof rootRoute
+    }
+    '/image': {
+      id: '/image'
+      path: '/image'
+      fullPath: '/image'
+      preLoaderRoute: typeof ImageImport
       parentRoute: typeof rootRoute
     }
     '/login': {
@@ -199,6 +213,7 @@ declare module '@tanstack/react-router' {
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
   '/contact': typeof ContactRoute
+  '/image': typeof ImageRoute
   '/login': typeof LoginRoute
   '/policy': typeof PolicyRoute
   '/questions': typeof QuestionsRoute
@@ -214,6 +229,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
   '/contact': typeof ContactRoute
+  '/image': typeof ImageRoute
   '/login': typeof LoginRoute
   '/policy': typeof PolicyRoute
   '/questions': typeof QuestionsRoute
@@ -230,6 +246,7 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
   '/contact': typeof ContactRoute
+  '/image': typeof ImageRoute
   '/login': typeof LoginRoute
   '/policy': typeof PolicyRoute
   '/questions': typeof QuestionsRoute
@@ -247,6 +264,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/contact'
+    | '/image'
     | '/login'
     | '/policy'
     | '/questions'
@@ -261,6 +279,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/contact'
+    | '/image'
     | '/login'
     | '/policy'
     | '/questions'
@@ -275,6 +294,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/contact'
+    | '/image'
     | '/login'
     | '/policy'
     | '/questions'
@@ -291,6 +311,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
   ContactRoute: typeof ContactRoute
+  ImageRoute: typeof ImageRoute
   LoginRoute: typeof LoginRoute
   PolicyRoute: typeof PolicyRoute
   QuestionsRoute: typeof QuestionsRoute
@@ -306,6 +327,7 @@ export interface RootRouteChildren {
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
   ContactRoute: ContactRoute,
+  ImageRoute: ImageRoute,
   LoginRoute: LoginRoute,
   PolicyRoute: PolicyRoute,
   QuestionsRoute: QuestionsRoute,
@@ -332,6 +354,7 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/contact",
+        "/image",
         "/login",
         "/policy",
         "/questions",
@@ -349,6 +372,9 @@ export const routeTree = rootRoute
     },
     "/contact": {
       "filePath": "contact.tsx"
+    },
+    "/image": {
+      "filePath": "image.tsx"
     },
     "/login": {
       "filePath": "login.tsx"

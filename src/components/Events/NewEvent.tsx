@@ -46,7 +46,7 @@ import { TimePickerDemo } from "@/lib/time-picker-demo"
 // zod schema for event data
 const categories = eventCategories.map((item) => item.name)
 
-const EventSchema = z.object({
+const NewEventSchema = z.object({
     title: z.string().min(10, "Title is required, at least 10 characters"),
     description: z.string().min(1, "Description is required"),
     category: z.enum(categories as [string, ...string[]]),
@@ -77,8 +77,8 @@ const EventSchema = z.object({
 
 
 const NewEvent = () => {
-    const form = useForm<z.infer<typeof EventSchema>>({
-        resolver: zodResolver(EventSchema),
+    const form = useForm<z.infer<typeof NewEventSchema>>({
+        resolver: zodResolver(NewEventSchema),
         defaultValues: {
             title: '',
             description: '',
@@ -94,7 +94,7 @@ const NewEvent = () => {
     });
 
 
-    const onSubmit = (data: z.infer<typeof EventSchema>) => {
+    const onSubmit = (data: z.infer<typeof NewEventSchema>) => {
         if (form.formState.errors.root?.message) {
             console.log(form.formState.errors.root?.message)
         }
@@ -111,68 +111,79 @@ const NewEvent = () => {
 
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-8">
-                        <FormField
-                            control={form.control}
-                            name="title"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Event Title</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Event Title" {...field} type="text" />
-                                    </FormControl>
-                                    <FormDescription>
-                                        Title or name of the event
-                                    </FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="description"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Description</FormLabel>
-                                    <FormControl>
-                                        <Textarea {...field} placeholder="Event Description" rows={8} />
-                                    </FormControl>
-                                    <FormDescription>
-                                        Briefly describe your event. What is it about? What makes it special? What can attendees expect? Keep it clear and precise.
-                                    </FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
 
-                        {/* select category */}
-                        <FormField
-                            control={form.control}
-                            name="category"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel> Event Category</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+
+
+                        <fieldset title="General Details" className="grid grid-cols-1 md:grrid-cols-2 gap-4 items-center align-middle border p-2">
+
+                            <legend className="text-lg font-semibold  text-sky-700">General Details</legend>
+                            <FormField
+                                control={form.control}
+                                name="title"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Event Title</FormLabel>
                                         <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select a category" />
-                                            </SelectTrigger>
-                                        </FormControl>                                        <SelectContent>
-                                            <SelectGroup>
-                                                <SelectLabel>Select a category</SelectLabel>
-                                                {
-                                                    eventCategories.map((category) => (
-                                                        <SelectItem key={category.name} value={category.name}>
-                                                            {category.name}
-                                                        </SelectItem>
-                                                    ))
-                                                }
-                                            </SelectGroup>
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                                            <Input placeholder="Event Title" {...field} type="text" />
+                                        </FormControl>
+                                        <FormDescription>
+                                            Title or name of the event
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            {/* select category */}
+                            <FormField
+                                control={form.control}
+                                name="category"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel> Event Category</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select a category" />
+                                                </SelectTrigger>
+                                            </FormControl>                                        <SelectContent>
+                                                <SelectGroup>
+                                                    <SelectLabel>Select a category</SelectLabel>
+                                                    {
+                                                        eventCategories.map((category) => (
+                                                            <SelectItem key={category.name} value={category.name}>
+                                                                {category.name}
+                                                            </SelectItem>
+                                                        ))
+                                                    }
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="description"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Description</FormLabel>
+                                        <FormControl>
+                                            <Textarea {...field} placeholder="Event Description" rows={8} />
+                                        </FormControl>
+                                        <FormDescription>
+                                            Briefly describe your event. What is it about? What makes it special? What can attendees expect? Keep it clear and precise.
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+
+
+                        </fieldset>
 
                         <fieldset title="Venue and Time Details" className="grid grid-cols-1 md:grrid-cols-2 gap-4 items-center align-middle border p-2">
 
@@ -318,7 +329,7 @@ const NewEvent = () => {
                         </fieldset>
 
                         {/* ticketing */}
-                        <fieldset title="Ticketing details" className="grid grid-cols-2 gap-4 items-center align-middle border p-2">
+                        <fieldset title="Ticketing details" className="grid grid-cols-2 gap-4 items-center align-middle border p-2 transition-all ease-linear duration-700 delay-200 ">
                             <legend className='text-lg font-semibold  text-sky-700'>Ticketing</legend>
 
                             <FormField
