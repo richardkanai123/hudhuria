@@ -35,13 +35,16 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover"
-import { CalendarIcon } from "lucide-react"
+import { CalendarIcon, Loader2Icon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { Calendar } from "../ui/calendar"
 import citiesInKenya from "@/lib/cities"
 import { Switch } from '../ui/switch';
 import { TimePickerDemo } from "@/lib/time-picker-demo"
+import { useMemo, useRef, useState } from "react"
+import CustomCloudImageUploader from "../CustomUi/CloudinaryCustomImageUploader"
+import { toast } from "react-toastify"
 
 // zod schema for event data
 const categories = eventCategories.map((item) => item.name)
@@ -77,6 +80,15 @@ const NewEventSchema = z.object({
 
 
 const NewEvent = () => {
+    const [imageData, setImageData] = useState<{ publicId: string, url: string } | null>(null);
+    const eventFormRef = useRef<HTMLFormElement>(null);
+
+    const handleImageUpload = (data: { publicId: string, url: string }) => {
+        setImageData(data);
+    };
+
+
+
     const form = useForm<z.infer<typeof NewEventSchema>>({
         resolver: zodResolver(NewEventSchema),
         defaultValues: {
@@ -91,17 +103,46 @@ const NewEvent = () => {
             },
             isPaidEvent: false,
         },
+        mode: 'onChange',
+    });
+
+    const handleSubmit = form.handleSubmit(async (data) => {
+
+        if (!imageData || !eventFormRef.current) {
+            toast.error("Please upload an banner image for the event");
+            return;
+        }
+        try {
+            const eventData = {
+                ...data,
+                bannerid: imageData.publicId,
+                imageUrl: imageData.url,
+            }
+            console.table(eventData);
+            // TODO : Send the event data to the database
+
+            // TODO : redirect to preview page for the event to confirm publishing or not
+
+        } catch (error) {
+            if (error instanceof Error) {
+                toast.error("Error submitting event data: " + error.message);
+            } else {
+                toast.error("An unknown error occurred");
+            }
+        }
+
     });
 
 
-    const onSubmit = (data: z.infer<typeof NewEventSchema>) => {
-        if (form.formState.errors.root?.message) {
-            console.log(form.formState.errors.root?.message)
-        }
-        console.log(data);
-    }
-
     const isPaidEvent = form.watch("isPaidEvent")
+
+    const categoryOptions = useMemo(() =>
+        eventCategories.map((category) => (
+            <SelectItem key={category.name} value={category.name}>
+                {category.name}
+            </SelectItem>
+        )), []
+    );
 
     return (
         <div
@@ -110,9 +151,11 @@ const NewEvent = () => {
                 <h1 className="text-2xl font-bold mb-4">New Event</h1>
 
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-8">
-
-
+                    <form ref={eventFormRef} onSubmit={handleSubmit} className="w-full space-y-8">
+                        <CustomCloudImageUploader
+                            eventFormData={eventFormRef.current ? new FormData(eventFormRef.current) : new FormData()}
+                            onImageUpload={handleImageUpload}
+                        />
 
                         <fieldset title="General Details" className="grid grid-cols-1 md:grrid-cols-2 gap-4 items-center align-middle border p-2">
 
@@ -143,19 +186,13 @@ const NewEvent = () => {
                                         <FormLabel> Event Category</FormLabel>
                                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                                             <FormControl>
-                                                <SelectTrigger>
+                                                <SelectTrigger >
                                                     <SelectValue placeholder="Select a category" />
                                                 </SelectTrigger>
                                             </FormControl>                                        <SelectContent>
                                                 <SelectGroup>
                                                     <SelectLabel>Select a category</SelectLabel>
-                                                    {
-                                                        eventCategories.map((category) => (
-                                                            <SelectItem key={category.name} value={category.name}>
-                                                                {category.name}
-                                                            </SelectItem>
-                                                        ))
-                                                    }
+                                                    {categoryOptions}
                                                 </SelectGroup>
                                             </SelectContent>
                                         </Select>
@@ -230,7 +267,6 @@ const NewEvent = () => {
                                                 </SelectGroup>
                                             </SelectContent>
                                         </Select>
-
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -404,7 +440,11 @@ const NewEvent = () => {
                             </FormMessage>
                         }
 
-                        <Button type="submit">Add Event</Button>
+                        <Button
+                            className="cursor-pointer"
+                            type="submit" disabled={!imageData}>
+                            {form.formState.isLoading && <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />}
+                            Create Event</Button>
                     </form>
                 </Form>
             </Card>

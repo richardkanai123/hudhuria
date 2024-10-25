@@ -3,19 +3,20 @@ import { CalendarCheck, MapPinHouseIcon, UsersRound } from "lucide-react"
 import { formatDistance } from "date-fns";
 import { Badge } from "../ui/badge";
 import { Link } from "@tanstack/react-router";
+import { AdvancedImage } from "@cloudinary/react";
+import { myCld } from "@/lib/cloudinary";
+// import { fill } from "@cloudinary/url-gen/actions/resize";
 
 const EventCard = ({ eventData }: { eventData: EventType }) => {
+
+    const Myimage = myCld.image('cld-sample-3').quality('auto')
     const { city, description, eventDate, ticketPrice, title, registeredAttendees, isFree, eventId } = eventData
     return (
         <Link to={`/events/${eventId}`} className='flex-1 w-full md:min-w-[300px] max-w-[350px] aspect-square  flex flex-col gap-2 rounded-md overflow-hidden cursor-pointer shadow-sm bg-accent transition-all ease-in duration-700 group hover:shadow-md'>
             {/* image */}
-            <div style={{
-                backgroundImage: `url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80')`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
+            <div className="w-full h-[200px] text-left flex flex-col items-end bg-opacity-25 bg-sky-200 bg-blend-overlay group-hover:bg-blend-normal transition-all ease-in delay-500 object-cover" >
+                <AdvancedImage cldImg={Myimage} className="w-full h-full object-cover" />
 
-            }} className="w-full h-[200px] text-left flex flex-col items-end bg-opacity-25 bg-sky-200 bg-blend-overlay group-hover:bg-blend-normal transition-all ease-in delay-500 " >
             </div >
             {/* Title within Image  */}
             <div className="w-full px-1 pb-4 flex flex-col gap-2">

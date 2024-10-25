@@ -4,9 +4,10 @@ import { RouterProvider, createRouter } from '@tanstack/react-router'
 
 import { routeTree } from './routeTree.gen'
 import './index.css'
+import { ConvexProvider, ConvexReactClient } from "convex/react";
 
 const router = createRouter({ routeTree })
-
+const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
 // Register the router instance for type safety
 declare module '@tanstack/react-router' {
@@ -17,7 +18,9 @@ declare module '@tanstack/react-router' {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <ConvexProvider client={convex}>
+      <RouterProvider router={router} />
+    </ConvexProvider>
   </StrictMode>,
 )
 
